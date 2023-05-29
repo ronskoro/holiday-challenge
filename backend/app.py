@@ -30,7 +30,10 @@ def execute_query(departure_airports, earliest_departure_date, latest_return_dat
     # TODO: the duration could be calculated in different ways. Figure out the right one.
     # TODO: handle the case where the query params are not provided (optional).  
     query = """
-        SELECT *
+    SELECT f.*
+    FROM flights f
+    INNER JOIN (
+        SELECT hotelid, MIN(price) AS lowest_price
         FROM flights
         WHERE
             outbounddepartureairport IN %s
@@ -39,7 +42,11 @@ def execute_query(departure_airports, earliest_departure_date, latest_return_dat
             AND countadults >= %s
             AND countchildren >= %s
             AND extract(epoch from (inbounddeparturedatetime - outboundarrivaldatetime)) = %s
+        GROUP BY hotelid
+    ) AS min_prices
+    ON f.hotelid = min_prices.hotelid AND f.price = min_prices.lowest_price
     """
+
     cursor.execute(
         query,
         (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, duration_ms)
