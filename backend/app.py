@@ -1,11 +1,14 @@
 from flask import Flask, request
 import os
+from flask_cors import CORS
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 
 app = Flask(__name__)
+CORS(app)
 load_dotenv('.env')
+
 
 def get_db_connection():
        env = os.environ
@@ -61,22 +64,23 @@ def execute_query_min_prices(departure_airports, earliest_departure_date, latest
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     query = """
-    SELECT hotelid, outbounddeparturedatetime, inbounddeparturedatetime, 
-        countadults, countchildren, price, inboundarrivaldatetime, 
-        outbounddepartureairport, outboundarrivaldatetime, 
-        mealtype, oceanview, roomtype
+    SELECT o.hotelid, o.outbounddeparturedatetime, o.inbounddeparturedatetime, 
+        o.countadults, o.countchildren, o.price, o.inboundarrivaldatetime, 
+        o.outbounddepartureairport, o.outboundarrivaldatetime, 
+        o.mealtype, o.oceanview, o.roomtype, h.hotelname, h.hotelstars
     FROM (
         SELECT *,
             ROW_NUMBER() OVER (PARTITION BY hotelid ORDER BY price) AS rn
         FROM offer
-         WHERE outbounddepartureairport IN %s
+        WHERE outbounddepartureairport IN %s
             AND outbounddeparturedatetime >= %s
             AND inboundarrivaldatetime <= %s
             AND countadults >= %s
             AND countchildren >= %s
             AND (DATE_TRUNC('day', inbounddeparturedatetime) - DATE_TRUNC('day', outbounddeparturedatetime)) = INTERVAL '%s days'
-    ) AS subquery
-    WHERE rn = 1;
+    ) AS o
+    INNER JOIN hotel h ON o.hotelid = h.hotelid
+    WHERE o.rn = 1;
     """
 
     cursor.execute(
@@ -89,7 +93,7 @@ def execute_query_min_prices(departure_airports, earliest_departure_date, latest
     
     return flights
 
-# Search based on list of params:
+# Search based on list of params. It give the minimum offer per hotel.
 # departureAirports, earliestDepartureDate, latestReturnDate, countAdults, countChildren, duration
 @app.get('/search')
 def search():
