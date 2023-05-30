@@ -28,14 +28,13 @@ def execute_query_matching(departure_airports, earliest_departure_date, latest_r
     cursor = conn.cursor()
 
     query = """
-    SELECT * from offer
-    WHERE 
-        outbounddepartureairport IN %s
-        AND outbounddeparturedatetime >= %s
-        AND inboundarrivaldatetime <= %s
-        AND countadults >= %s
-        AND countchildren >= %s
-        AND (DATE_TRUNC('day', inbounddeparturedatetime) - DATE_TRUNC('day', outbounddeparturedatetime)) = INTERVAL '%s days'
+        SELECT * from offer
+        WHERE outbounddepartureairport IN %s
+            AND outbounddeparturedatetime >= %s
+            AND inboundarrivaldatetime <= %s
+            AND countadults >= %s
+            AND countchildren >= %s
+            AND (DATE_TRUNC('day', inbounddeparturedatetime) - DATE_TRUNC('day', outbounddeparturedatetime)) = INTERVAL '%s days'
     """
     # check if the hotelid is provided
     if hotelid is not None:
@@ -56,35 +55,33 @@ def execute_query_matching(departure_airports, earliest_departure_date, latest_r
 
 
 # query to get min prices per hotel
-def execute_query(departure_airports, earliest_departure_date, latest_return_date, count_adults, count_children, duration):
+def execute_query_min_prices(departure_airports, earliest_departure_date, latest_return_date, count_adults, count_children, duration):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor = conn.cursor()
 
-    duration_ms = duration * 24 * 60 * 60
-    # TODO: the duration could be calculated in different ways. Figure out the right one.
-    # TODO: handle the case where the query params are not provided (optional).  
     query = """
-    SELECT f.*
-    FROM flights f
-    INNER JOIN (
-        SELECT hotelid, MIN(price) AS lowest_price
-        FROM flights
-        WHERE
-            outbounddepartureairport IN %s
+    SELECT hotelid, outbounddeparturedatetime, inbounddeparturedatetime, 
+        countadults, countchildren, price, inboundarrivaldatetime, 
+        outbounddepartureairport, outboundarrivaldatetime, 
+        mealtype, oceanview, roomtype
+    FROM (
+        SELECT *,
+            ROW_NUMBER() OVER (PARTITION BY hotelid ORDER BY price) AS rn
+        FROM offer
+         WHERE outbounddepartureairport IN %s
             AND outbounddeparturedatetime >= %s
             AND inboundarrivaldatetime <= %s
             AND countadults >= %s
             AND countchildren >= %s
-            AND extract(epoch from (inbounddeparturedatetime - outboundarrivaldatetime)) = %s
-        GROUP BY hotelid
-    ) AS min_prices
-    ON f.hotelid = min_prices.hotelid AND f.price = min_prices.lowest_price
+            AND (DATE_TRUNC('day', inbounddeparturedatetime) - DATE_TRUNC('day', outbounddeparturedatetime)) = INTERVAL '%s days'
+    ) AS subquery
+    WHERE rn = 1;
     """
 
     cursor.execute(
         query,
-        (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, duration_ms)
+        (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, int(duration))
     )
     flights = cursor.fetchall()
     cursor.close()
@@ -96,13 +93,21 @@ def execute_query(departure_airports, earliest_departure_date, latest_return_dat
 def search():
     # query params
     params = request.args
-    flights = execute_query(
+    required_params = ["departureAirports", "earliestDepartureDate", "latestReturnDate", "countAdults", "countChildren", "duration"]
+    # Check if all required parameters are present
+    missing_params = [param for param in required_params if param not in params]
+
+    if missing_params:
+        error_message = f"Bad request. Missing required parameters."
+        return error_message, 400  # Return error message with status code 400 (Bad Request)
+    
+    flights = execute_query_min_prices(
         params.getlist("departureAirports"),
         params["earliestDepartureDate"],
         params["latestReturnDate"],
         params["countAdults"],
         params["countChildren"],
-        params["duration"]
+        params["duration"],
     )
     
     return flights
