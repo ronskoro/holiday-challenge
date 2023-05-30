@@ -17,10 +17,37 @@ def get_db_connection():
        )
        return conn
 
-@app.get('/')
+@app.get('/liveness')
 def index():
-        return "hello world"
+        return "live"
 
+# query to get all matching offers
+def execute_query_matching(departure_airports, earliest_departure_date, latest_return_date, count_adults, count_children, duration):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor = conn.cursor()
+
+    query = """
+    SELECT * from offer
+    WHERE 
+        outbounddepartureairport IN %s
+        AND outbounddeparturedatetime >= %s
+        AND inboundarrivaldatetime <= %s
+        AND countadults >= %s
+        AND countchildren >= %s
+        AND (DATE_TRUNC('day', inbounddeparturedatetime) - DATE_TRUNC('day', outbounddeparturedatetime)) = INTERVAL '%s days';
+    """
+
+    cursor.execute(
+        query,
+        (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, int(duration))
+    )
+    flights = cursor.fetchall()
+    cursor.close()
+    return flights
+
+
+# query to get min prices per hotel
 def execute_query(departure_airports, earliest_departure_date, latest_return_date, count_adults, count_children, duration):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -57,44 +84,47 @@ def execute_query(departure_airports, earliest_departure_date, latest_return_dat
 
 # Search based on list of params:
 # departureAirports, earliestDepartureDate, latestReturnDate, countAdults, countChildren, duration
-@app.get('/search', methods=['GET'])
+@app.get('/search')
 def search():
-       # query params
-       departureAirports = request.args.getlist["departureAirports"]
-       earliestDepartureDate = request.args["earliestDepartureDate"]
-       latestReturnDate = request.args["latestReturnDate"]
-       countAdults = request.args["countAdults"]
-       countChildren = request.args["countChildren"]
-       duration = request.args["duration"]
-
-       flights = execute_query(
-        departureAirports,
-        earliestDepartureDate,
-        latestReturnDate,
-        countAdults,
-        countChildren,
-        duration
+    # query params
+    params = request.args
+    flights = execute_query(
+        params.getlist("departureAirports"),
+        params["earliestDepartureDate"],
+        params["latestReturnDate"],
+        params["countAdults"],
+        params["countChildren"],
+        params["duration"]
     )
     
-       return flights
+    return flights
 
+# returns all matching offers.
+@app.get('/alloffers')
+def search_matching():
+    # query params
+    params = request.args
+    required_params = ["departureAirports", "earliestDepartureDate", "latestReturnDate", "countAdults", "countChildren", "duration"]
+    # Check if all required parameters are present
+    missing_params = [param for param in required_params if param not in params]
+    
+    if missing_params:
+        error_message = f"Bad request. Missing required parameters."
+        return error_message, 400  # Return error message with status code 400 (Bad Request)
+    
+    flights = execute_query_matching(
+        params.getlist("departureAirports"),
+        params["earliestDepartureDate"],
+        params["latestReturnDate"],
+        params["countAdults"],
+        params["countChildren"],
+        params["duration"]
+    )
+    
+    return flights
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+      app.run(debug=True)  
 
 
 
@@ -124,5 +154,4 @@ def search():
 
 
 
-if __name__ == "__main__":
-      app.run(debug=True)  
+
