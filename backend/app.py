@@ -1,6 +1,7 @@
 from flask import Flask, request
 import os
 import psycopg2
+from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 
 app = Flask(__name__)
@@ -24,8 +25,7 @@ def index():
 # query to get all matching offers
 def execute_query_matching(departure_airports, earliest_departure_date, latest_return_date, count_adults, count_children, duration, hotelid):
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     query = """
         SELECT * from offer
@@ -50,6 +50,7 @@ def execute_query_matching(departure_airports, earliest_departure_date, latest_r
     )
 
     flights = cursor.fetchall()
+
     cursor.close()
     return flights
 
@@ -57,8 +58,7 @@ def execute_query_matching(departure_airports, earliest_departure_date, latest_r
 # query to get min prices per hotel
 def execute_query_min_prices(departure_airports, earliest_departure_date, latest_return_date, count_adults, count_children, duration):
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     query = """
     SELECT hotelid, outbounddeparturedatetime, inbounddeparturedatetime, 
@@ -83,8 +83,10 @@ def execute_query_min_prices(departure_airports, earliest_departure_date, latest
         query,
         (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, int(duration))
     )
+
     flights = cursor.fetchall()
     cursor.close()
+    
     return flights
 
 # Search based on list of params:
@@ -112,7 +114,8 @@ def search():
     
     return flights
 
-# returns all matching offers. All query params are required except the hotelid.
+# returns all matching offers. 
+# By providing the optional query parameter hotelid, you can filter based on a hotel. 
 @app.get('/offers')
 def search_matching():
     # query params
