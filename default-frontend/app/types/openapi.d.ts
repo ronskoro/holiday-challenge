@@ -9,6 +9,12 @@ import type {
 declare namespace Components {
     namespace Schemas {
         export interface BestHotelOffer {
+            roomtype: ReactNode;
+            price: ReactNode;
+            mealtype: ReactNode;
+            hotelstars: number | null | undefined;
+            hotelname: ReactNode;
+            hotelid: Key | null | undefined;
             hotel: Hotel;
             minPrice: number;
             departureDate: string; // date
@@ -22,6 +28,9 @@ declare namespace Components {
         }
         export type GetBestHotelOffersResponse = BestHotelOffer[];
         export interface GetHotelOffersResponse {
+            [x: string]: number | null | undefined;
+            hotelname: ReactNode;
+            hotelid: number;
             hotel: Hotel;
             items: Offer[];
         }

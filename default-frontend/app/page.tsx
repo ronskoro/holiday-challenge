@@ -6,10 +6,13 @@ import Hotel from "@/app/components/Hotel/Hotel";
 import {OpenAPIClientAxios} from "openapi-client-axios";
 import {Client, Components, Paths} from "@/app/types/openapi";
 import {useEffect, useState} from "react";
+import 'text-encoding';
+import axios from 'axios';
 import Link from "next/link";
 import {useRouter, useSearchParams} from "next/navigation";
 import BestHotelOffer = Components.Schemas.BestHotelOffer;
 import {GetBestOffersByHotelFromQuery, GetBestOffersByHotelToQuery} from "@/app/types/converter";
+import { TrySharp } from "@mui/icons-material";
 
 export default function HomePage() {
     const [offers, setOffers] = useState<BestHotelOffer[]>([]);
@@ -45,10 +48,57 @@ export default function HomePage() {
     async function load(parameters: Paths.GetBestOffersByHotel.QueryParameters) {
         setQueryParameters(parameters);
         router.push("/?" + GetBestOffersByHotelToQuery(parameters));
-        const api = new OpenAPIClientAxios({definition: 'http://localhost:8090/openapi', withServer: 0})
-        const client = await api.init<Client>()
-        const response = await client.getBestOffersByHotel(parameters);
-        setOffers(response.data);
+
+        // convert date string to timestamp
+        const dateDeparture = new Date(parameters.earliestDepartureDate);
+        const earliestDepartureDateString = dateDeparture.toLocaleString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+        
+        const dateReturn = new Date(parameters.latestReturnDate);
+        const latestReturnDateString = dateReturn.toLocaleString('en-US', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        const date = new Date(earliestDepartureDateString);
+        const earliestDepartureDate = date.toISOString().replace('T', ' ').replace('.000Z', '');
+
+        const returnDate = new Date(latestReturnDateString);
+        const latestReturnDate = returnDate.toISOString().replace('T', ' ').replace('.000Z', '');
+
+        // console.log(latestReturnDate);
+
+        try {
+            const response = await axios.get('http://localhost:5000/search', {
+              params: {
+                departureAirports: parameters.departureAirports.join(','),
+                countAdults: parameters.countAdults,
+                countChildren: parameters.countChildren,
+                duration: parameters.duration,
+                earliestDepartureDate: earliestDepartureDate,
+                latestReturnDate: latestReturnDate
+              }
+            });
+        
+            setOffers(response.data);
+          } catch (error) {
+            // Handle the error
+            console.error('Error:', error);
+          }
+        // const api = new OpenAPIClientAxios({definition: 'http://localhost:8090/openapi', withServer: 0})
+        // const client = await api.init<Client>()
+        // const response = await client.getBestOffersByHotel(parameters);
+        // setOffers(response.data);
     }
 
     return (
@@ -58,8 +108,8 @@ export default function HomePage() {
             <Typography variant="h4" sx={{mt: "60px", mb: "30px"}}>Hotels for your Mallorca-Trip:</Typography>
             <Stack gap={3}>
                 {offers.map(offer =>
-                    <Link key={offer.hotel.id}
-                          href={{pathname: '/offers', query: {...queryParameters, hotelId: offer.hotel.id}}}
+                    <Link key={offer.hotelid}
+                          href={{pathname: '/offers', query: {...queryParameters, hotelId: offer.hotelid}}}
                           style={{textDecoration: "none"}}>
                         <Hotel offer={offer}/>
                     </Link>

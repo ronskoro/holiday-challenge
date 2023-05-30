@@ -204,7 +204,7 @@
           "hotel": {
             "$ref": "#/components/schemas/Hotel"
           },
-          "minPrice": {
+          "price": {
             "type": "number"
           },
           "departureDate": {
