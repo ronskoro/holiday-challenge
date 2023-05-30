@@ -22,7 +22,7 @@ def index():
         return "live"
 
 # query to get all matching offers
-def execute_query_matching(departure_airports, earliest_departure_date, latest_return_date, count_adults, count_children, duration):
+def execute_query_matching(departure_airports, earliest_departure_date, latest_return_date, count_adults, count_children, duration, hotelid):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor = conn.cursor()
@@ -35,13 +35,21 @@ def execute_query_matching(departure_airports, earliest_departure_date, latest_r
         AND inboundarrivaldatetime <= %s
         AND countadults >= %s
         AND countchildren >= %s
-        AND (DATE_TRUNC('day', inbounddeparturedatetime) - DATE_TRUNC('day', outbounddeparturedatetime)) = INTERVAL '%s days';
+        AND (DATE_TRUNC('day', inbounddeparturedatetime) - DATE_TRUNC('day', outbounddeparturedatetime)) = INTERVAL '%s days'
     """
+    # check if the hotelid is provided
+    if hotelid is not None:
+        query += " AND hotelid = %s;"
+        params = (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, int(duration), hotelid)
+    else:
+        query += ";"
+        params = (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, int(duration))
 
     cursor.execute(
         query,
-        (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, int(duration))
+        params
     )
+
     flights = cursor.fetchall()
     cursor.close()
     return flights
@@ -99,15 +107,18 @@ def search():
     
     return flights
 
-# returns all matching offers.
-@app.get('/alloffers')
+# returns all matching offers. All query params are required except the hotelid.
+@app.get('/offers')
 def search_matching():
     # query params
     params = request.args
     required_params = ["departureAirports", "earliestDepartureDate", "latestReturnDate", "countAdults", "countChildren", "duration"]
     # Check if all required parameters are present
     missing_params = [param for param in required_params if param not in params]
-    
+
+    # optional query param: hotelid
+    hotelid = params.get('hotelid')
+
     if missing_params:
         error_message = f"Bad request. Missing required parameters."
         return error_message, 400  # Return error message with status code 400 (Bad Request)
@@ -118,7 +129,8 @@ def search_matching():
         params["latestReturnDate"],
         params["countAdults"],
         params["countChildren"],
-        params["duration"]
+        params["duration"],
+        hotelid
     )
     
     return flights
