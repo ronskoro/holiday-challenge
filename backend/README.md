@@ -10,18 +10,15 @@ The project requires installing Postgresql and Python on your system.
 
 1. Open the terminal.
 2. Run the following command to install PostgreSQL:
-
-bash
-Copy code
-sudo apt-get install postgresql
+`sudo apt-get install postgresql`
 
 #### To install Python:
 
 1. Open the terminal.
 2. Run: 
-sudo apt-get update
+`sudo apt-get update`
 3. Run the following command to install Python:
-sudo apt-get install python3
+`sudo apt-get install python3`
 
 Note: this installation process is only for Linux. For Windows or Mac, please check out the respective websites. 
 
@@ -39,10 +36,10 @@ The steps to run the frontend are mentioned in the respective readme.
 
 2. Launch the backend:
 1. Run the following commands to install the requirements:
-pip install -r requirements.txt
+`pip install -r requirements.txt`
 2. Once the requirements are installed, start the server: 
-flask run 
-for debugging purposes and for autoreloading, use: flask run --debug
+`flask run `
+for debugging purposes and for autoreloading, use: `flask run --debug`
 
 ### (BONUS FEATURE) Docker
 If you would like to save the hassle of installing everything yourself, you can also use the provided Dockerfile. 
@@ -53,20 +50,20 @@ In order to use the provided datasets, we use Postgresql for higher query perfor
 1. Create a Postgresql database called "offer"
 
 2. Run the script "init_db.py" in the backend/scripts folder:
-sudo python3 init_db.py
+`sudo python3 init_db.py`
 
 This will create the "offer" and "hotel" tables. 
 
 3. Log into psql by running: 
-psql -U <username> -d <database_name>
+`psql -U <username> -d <database_name>`
 
 4. Once inside, import the hotels.csv dataset (provided in the project) under /data:
-psql -U <username> -d <database_name> -c "\copy hotel FROM 'path/to/csv/file.csv' DELIMITER ',' CSV HEADER";
+`psql -U <username> -d <database_name> -c "\copy hotel FROM 'path/to/csv/file.csv' DELIMITER ',' CSV HEADER";`
 
 Replace the path/to/csv/file.csv with the hotels.csv file. 
 
 5. Now, copy the offers.csv dataset into the offer table:
-psql -U <username> -d <database_name> -c "\copy offer FROM 'path/to/csv/file.csv' DELIMITER ',' CSV HEADER";
+`psql -U <username> -d <database_name> -c "\copy offer FROM 'path/to/csv/file.csv' DELIMITER ',' CSV HEADER";`
 
 Replace the path/to/csv/file.csv with the offers.csv file. 
 **WARNING: since the offers.csv is so large it will take a while to import the dataset into Postgresql. It may take several hours. for me it took 100 minutes.**
