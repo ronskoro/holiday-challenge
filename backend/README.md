@@ -50,19 +50,23 @@ In order to use the provided datasets, we use Postgresql for higher query perfor
 1. Create a Postgresql database called "offer"
 
 2. Run the script "init_db.py" in the backend/scripts folder:
+
 `sudo python3 init_db.py`
 
 This will create the "offer" and "hotel" tables. 
 
-3. Log into psql by running: 
+3. Log into psql by running (If this is your first time logging in, you need to create a user first. Follow the instructions on the prompt): 
+
 `psql -U <username> -d <database_name>`
 
-4. Once inside, import the hotels.csv dataset (provided in the project) under /data:
+4. Once inside, import the hotels.csv dataset (provided in the project) under backend/data.:
+
 `psql -U <username> -d <database_name> -c "\copy hotel FROM 'path/to/csv/file.csv' DELIMITER ',' CSV HEADER";`
 
 Replace the path/to/csv/file.csv with the hotels.csv file. 
 
 5. Now, copy the offers.csv dataset into the offer table:
+
 `psql -U <username> -d <database_name> -c "\copy offer FROM 'path/to/csv/file.csv' DELIMITER ',' CSV HEADER";`
 
 Replace the path/to/csv/file.csv with the offers.csv file. 
@@ -79,16 +83,21 @@ Reduced Disk I/O: Indexes store a subset of the data in a more compact form. Thi
 
 Optimized Sorting and Joins: Indexes are instrumental in optimizing sorting and join operations. When performing sorting or joining multiple tables, indexes can be used to minimize the number of comparisons and lookups, leading to faster query execution times.
 
-In this project query execution performance on my machine increased from 20secs to 100-200ms. 
+**In this project query execution performance on my machine increased from 20secs to 100-200ms.**
 
 #### Creating an index
 Creating a B-tree index takes about 5-10 minutes on my machine. 
 
 **Create the following indexes for a significant performance boost**
+
 In psql or the pgadmin 4 GUI, run the following SQL commands: 
 
-1. CREATE INDEX trip_duration_idx offer(outbounddeparturedatetime, inboundarrivaldatetime, outbounddepartureairport);
+1. first index:
 
-2. CREATE INDEX multiple_col_idx offer(outbounddeparturedatetime, inboundarrivaldatetime, outbounddepartureairport, countadults, countchildren);
+`CREATE INDEX trip_duration_idx offer(outbounddeparturedatetime, inboundarrivaldatetime, outbounddepartureairport);`
+
+2. second index: 
+
+`CREATE INDEX multiple_col_idx offer(outbounddeparturedatetime, inboundarrivaldatetime, outbounddepartureairport, countadults, countchildren);`
 
 **In order to improve the performance of other queries, new indexes can be created. For example, using the hotelid column or the mealtype and roomtype, if the user decides to search by the roomtype and mealtype**
