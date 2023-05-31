@@ -3,7 +3,11 @@
 ## Project Description
 This project implements a backend server using Flask, a lightweight web framework for Python, and PostgreSQL, a powerful open-source relational database management system. The backend serves as the foundation for the application, handling requests from the frontend and interacting with the database to store and retrieve data. It serves the endpoints required by the GenDev Holiday Challenge.
 
-### Prerequisites
+### Project Demo
+I have created a short demo that can be accessed here: https://drive.google.com/file/d/1vUXjRa7CoWf5RCqKKO1L64QLunkKzObl/view?usp=share_link.
+In case you have any issues, you can contact me here: rskorobogat@gmail.com or message me via Linkedin.
+
+### Prerequisites for running the application yourself
 The project requires installing Postgresql and Python on your system. 
 
 #### To install PostgreSQL:
