@@ -60,8 +60,8 @@ export default function SearchForm({submitCallback}: Properties) {
         setCountAdults(isNaN(params.countAdults) ? 0 : params.countAdults);
         setDuration(isNaN(params.duration) ? 0 : params.duration);
         setDurationInput(params.duration ? params.duration.toString() : "");
-        setEarliestDepartureDate(params.earliestDepartureDate ? dayjs(params.earliestDepartureDate) : null);
-        setLatestReturnDate(params.latestReturnDate ? dayjs(params.latestReturnDate) : null);
+        setEarliestDepartureDate(params.earliestDepartureDate ? dayjs(params.earliestDepartureDate).set('hour', 0).set('minute', 0).set('second', 0) : null);
+        setLatestReturnDate(params.latestReturnDate ? dayjs(params.latestReturnDate).set('hour', 23).set('minute', 59) : null);
     }, [query])
 
     const handleAirportChange = (event: SelectChangeEvent<typeof departureAirports>) => {
