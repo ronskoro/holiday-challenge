@@ -31,7 +31,11 @@ def execute_query_matching(departure_airports, earliest_departure_date, latest_r
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     query = """
-        SELECT * from offer
+        SELECT offer.price, offer.countadults, offer.countchildren, offer.inboundarrivaldatetime, offer.inbounddeparturedatetime,
+               offer.outboundarrivaldatetime, offer.outbounddepartureairport, offer.outbounddeparturedatetime, offer.roomtype,
+               offer.hotelid, hotel.hotelname, hotel.hotelstars
+        FROM offer
+        JOIN hotel ON offer.hotelid = hotel.hotelid
         WHERE outbounddepartureairport IN %s
             AND outbounddeparturedatetime >= %s
             AND inboundarrivaldatetime <= %s
@@ -39,24 +43,21 @@ def execute_query_matching(departure_airports, earliest_departure_date, latest_r
             AND countchildren >= %s
             AND (DATE_TRUNC('day', inbounddeparturedatetime) - DATE_TRUNC('day', outbounddeparturedatetime)) = INTERVAL '%s days'
     """
+
     # check if the hotelid is provided
     if hotelid is not None:
-        query += " AND hotelid = %s;"
+        query += " AND offer.hotelid = %s;"
         params = (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, int(duration), hotelid)
     else:
         query += ";"
         params = (tuple(departure_airports), earliest_departure_date, latest_return_date, count_adults, count_children, int(duration))
 
-    cursor.execute(
-        query,
-        params
-    )
+    cursor.execute(query, params)
 
     flights = cursor.fetchall()
 
     cursor.close()
     return flights
-
 
 # query to get min prices per hotel
 def execute_query_min_prices(departure_airports, earliest_departure_date, latest_return_date, count_adults, count_children, duration):
