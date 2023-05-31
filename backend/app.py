@@ -154,29 +154,4 @@ if __name__ == "__main__":
 
 
 
-# @app.route('/test', methods=['GET', 'POST'])
-# def search():
-#        if request.method == 'POST':
-#              if 'username' in request.form:
-#                    return request.form['username']
-             
-#              # check the parameters
-#              if request.args.get("username"):
-#                 #    return "The user is:" + request.args.get("username")
-#                 app.logger.debug('query params given')
-#                 return {"hello": 1, "world": 2}
-#              return 'no user'
-#        else:
-#            return 'get method'
-       
-# @app.post('/user/<path:user_id>')
-# def search2(user_id):
-#       return f"The user id: {user_id}"
-
-# @app.get('/env-vars')
-# def env_vars():
-#       return f"{app.config['SQLALCHEMY_DATABASE_URI']}"
-
-
-
 
