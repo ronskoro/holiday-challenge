@@ -49,34 +49,8 @@ export default function HomePage() {
         setQueryParameters(parameters);
         router.push("/?" + GetBestOffersByHotelToQuery(parameters));
 
-        // convert date string to timestamp
-        const dateDeparture = new Date(parameters.earliestDepartureDate);
-        const earliestDepartureDateString = dateDeparture.toLocaleString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          });
-        
-        const dateReturn = new Date(parameters.latestReturnDate);
-        const latestReturnDateString = dateReturn.toLocaleString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-        });
-
-        const date = new Date(earliestDepartureDateString);
-        const earliestDepartureDate = date.toISOString().replace('T', ' ').replace('.000Z', '');
-
-        const returnDate = new Date(latestReturnDateString);
-        const latestReturnDate = returnDate.toISOString().replace('T', ' ').replace('.000Z', '');
-
-        // console.log(latestReturnDate);
+        const earliestDepartureDate = parameters.earliestDepartureDate.replace('T', ' ').replace('.000Z', '');
+        const latestReturnDate = parameters.latestReturnDate.replace('T', ' ').replace('.000Z', '');
 
         try {
             const response = await axios.get('http://localhost:5000/search', {
