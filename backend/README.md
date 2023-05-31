@@ -7,7 +7,7 @@ This project implements a backend server using Flask, a lightweight web framewor
 I have created a short demo that can be accessed here: https://drive.google.com/file/d/1vUXjRa7CoWf5RCqKKO1L64QLunkKzObl/view?usp=share_link.
 In case you have any issues, you can contact me here: rskorobogat@gmail.com or message me via Linkedin.
 
-### Prerequisites for running the application yourself
+### Prerequisites for running the application
 The project requires installing Postgresql and Python on your system. 
 
 #### To install PostgreSQL:
