@@ -7,7 +7,8 @@ This project implements a backend server using Flask, a lightweight web framewor
 I have created a short demo that can be accessed here: https://drive.google.com/file/d/1vUXjRa7CoWf5RCqKKO1L64QLunkKzObl/view?usp=share_link.
 In case you have any issues, you can contact me here: rskorobogat@gmail.com or message me via Linkedin.
 
-I am quite proud with the end result. As you can see in the video, the performance is for the queries is about 200-300ms. In addition, I also created a Dockerfile to make it easier to run the application yourself. 
+I am quite proud with the end result. As you can see in the video, the performance for the queries is about 200-300ms, which is very high in comparison to 20secs without any optimizations. In addition, I also created a Dockerfile to make it easier to run the application yourself as well as scripts to automate some of the steps. 
+
 I chose a new tech stack to make the challenge even more exciting, but that made it more difficult. Overall, I spent more time on this project than I am proud to say 😉,but I am pretty happy with the results. I think they are quite suitable for even real-life production systems. Thank you for considering my application and looking forward to hearing from you!
 
 ### Prerequisites for running the application
