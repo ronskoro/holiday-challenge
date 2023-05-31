@@ -1,1 +1,3 @@
-data
+data/offers.csv
+data/partitions
+__pycache__

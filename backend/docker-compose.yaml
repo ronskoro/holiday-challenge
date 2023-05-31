@@ -1,0 +1,21 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ronald123
+      POSTGRES_DB: offer
+
+  flask:
+    build: .
+    restart: always
+    ports:
+      - 5000:5000
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://postgres:ronald123@postgres:5432/offer
